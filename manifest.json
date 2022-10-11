@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Credit Card Offers",
+  "description": "Automatically clicks credit card offers and gathers information for users to view",
+  "version": "1.0.0",
+  "author": "iyf07",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Credit card offers"
+  },
+  "permissions":  ["activeTab", "tabs"]
+} 
