@@ -4,9 +4,12 @@
   "description": "Automatically clicks credit card offers and gathers information for users to view",
   "version": "1.0.0",
   "author": "iyf07",
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "Credit card offers"
-  },
-  "permissions":  ["activeTab", "tabs"]
+  "content_scripts": [
+    {
+      "js": [ "contentScript.js" ],
+      "matches": [ "https://global.americanexpress.com/offers/*" ],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [ "activeTab", "tabs", "scripting" ]
 } 
