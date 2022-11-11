@@ -100,6 +100,7 @@ function addRetrieveAmexOffersButton() {
 
 // Retrieve all offers info
 function retrieveAmexOffers() {
+    cleanLocalAmexOffers();
     const accountNumber = document.getElementsByClassName('card-name heading-1 axp-account-switcher__accountSwitcher__lastFive___1s6L_ axp-account-switcher__accountSwitcher__hasOneCardLastFive___3mnDN');
     const vendorNames = document.getElementsByClassName('body-1 margin-0-b dls-gray-05');
     const offers = document.getElementsByClassName('heading-3 margin-0-b dls-gray-06');
@@ -143,6 +144,13 @@ function retrieveAmexOffers() {
             expirationISO = expirationISODate.toISOString();
         }
         var val = { 'offer': offer, 'expiration': expiration, 'account': account, 'expirationISO': expirationISO };
-        console.log(val)
+        console.log(val);
     }
+    //removeRetrieveAmexOffersButton();
+}
+
+// Remove the button after retrieving all offers
+function removeRetrieveAmexOffersButton() {
+    var retrieveButton = document.getElementById('retrieveAmexOffers');
+    retrieveButton.parentNode.removeChild(retrieveButton);
 }
