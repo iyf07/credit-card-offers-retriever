@@ -1,34 +1,28 @@
 // Get the current tab URL
-const curUrl = window.location.toString();
+var curUrl = window.location.toString();
 
 // List of available sites
+const amex = "https://global.americanexpress.com/offers/"
 const amexEligible = "https://global.americanexpress.com/offers/eligible";
 const amexEnrolled = "https://global.americanexpress.com/offers/enrolled";
 
 // Check the current tab
-switch (curUrl) {
-    case amexEligible:
-        addAmexOffers()
-    case amexEnrolled:
-        getAmexOffers();
+if (curUrl.startsWith(amex)) {
+    addAmexOffers();
+    getAmexOffers();
 }
 
 // Sleep function to wait
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Add a button to the page which activates all offers
 function addAmexOffers() {
     setTimeout(function () {
         const header = document.querySelector('.axp-offers__global__headerSection___1aNfL');
-        const allButtons = document.getElementsByClassName("offer-cta");
-        const offers = Array.from(allButtons).filter(button => button.title === "Add to Card" || button.title === "Activate Offer");
         var activateButton = addClickAmexOffersButton();
         header.appendChild(activateButton);
-        if (offers.length == 0) {
-            activateButton.setAttribute('disabled', true);
-        }
         activateButton.addEventListener('click', clickAmexOffers);
     }, 3000)
 }
@@ -37,43 +31,33 @@ function addAmexOffers() {
 function addClickAmexOffersButton() {
     var activateButton = document.createElement('button');
     activateButton.id = 'activateAmexOffers';
-    activateButton.className = 'col-sm-12 col-md-3 col-lg-2 offer-cta axp-offers__global__fluid___15Bk5 css-1duq00z';
+    activateButton.className = ' css-ns91eb';
     activateButton.innerHTML = 'Activate Offers';
     activateButton.style.textAlign = "center";
-    activateButton.style.marginLeft = "30px";
+    activateButton.style.marginLeft = "10px";
     return activateButton;
 }
 
 // Click the button to activate all offers. Will automatically reload
 async function clickAmexOffers() {
-    alert('Please do not close the page until all offers have been activated.')
-    var offersActivated = 0;
-    var emptyOffersTimes = 0;
-    while (true) {
-        const offers = Array.from(document.getElementsByClassName("offer-cta")).filter(btn => btn.title === "Add to Card" || btn.title === "Activate Offer");
-        if (emptyOffersTimes == 2) {
-            break
-        }
-        if (offers.length == 0) {
-            emptyOffersTimes++;
-            continue
-        }
-        for (const offer of offers) {
-            offer.click();
-            offersActivated++;
-            await sleep(1000);
-        };
-        location.reload();
-        await sleep(3000);
+    var curUrl = window.location.toString();
+    if (!curUrl.startsWith(amexEligible)) {
+        alert('Redirecting to the eligible offers page.');
+        window.location.replace(amexEligible);
+        return;
     }
-    alert(offersActivated + ' offers have been activated.')
-    removeClickAmexOffersButton();
-}
-
-// Remove the button after activating all offers
-function removeClickAmexOffersButton() {
-    var activateButton = document.getElementById('activateAmexOffers');
-    activateButton.parentNode.removeChild(activateButton);
+    alert('Please do not close the page until all offers have been activated.')
+    var times = 0;
+    const offers = Array.from(document.getElementsByClassName("offer-cta")).filter(btn => btn.title === "Add to Card" || btn.title === "Activate Offer");
+    for (const offer of offers) {
+        offer.click();
+        times++;
+        if (times == 100) {
+            break;
+        }
+    }
+    alert('Offers have been activated.')
+    location.reload();
 }
 
 // Add a button to the page which retrieves all offers
@@ -91,15 +75,21 @@ function getAmexOffers() {
 function addRetrieveAmexOffersButton() {
     var retrieveButton = document.createElement('button');
     retrieveButton.id = 'retrieveAmexOffers';
-    retrieveButton.className = 'col-sm-12 col-md-3 col-lg-2  css-ns91eb';
+    retrieveButton.className = ' css-ns91eb';
     retrieveButton.innerHTML = 'Retrieve Offers';
     retrieveButton.style.textAlign = "center";
-    retrieveButton.style.marginLeft = "30px";
+    retrieveButton.style.marginLeft = "10px";
     return retrieveButton;
 }
 
 // Retrieve all offers info
 function retrieveAmexOffers() {
+    var curUrl = window.location.toString();
+    if (!curUrl.startsWith(amexEnrolled)) {
+        alert('Redirecting to the enrolled offers page.');
+        window.location.replace(amexEnrolled);
+        return;
+    }
     const accountNumber = document.getElementsByClassName('card-name heading-1 axp-account-switcher__accountSwitcher__lastFive___1s6L_ axp-account-switcher__accountSwitcher__hasOneCardLastFive___3mnDN');
     const vendorNames = document.getElementsByClassName('body-1 margin-0-b dls-gray-05');
     const offers = document.getElementsByClassName('heading-3 margin-0-b dls-gray-06');
@@ -135,14 +125,14 @@ function retrieveAmexOffers() {
             var splits = expirationISO.split('-');
             expiration = splits[1] + '-' + splits[2].slice(0, 2) + '-' + splits[0];
 
-        // offers that are not expiring in two weeks
+            // offers that are not expiring in two weeks
         } else {
             expiration = rawExpirations[i - rawCloseExpirations.length].innerHTML;
         }
-        var offerInfo = {'offer': offer, 'expiration': expiration, 'account': account, 'bank': 'AmexOffers'};
-        localStorage.setItem(vendor, JSON.stringify(offerInfo));
+        var offerInfo = { 'offer': offer, 'expiration': expiration, 'bank': 'AmexOffers' };
+        localStorage.setItem(vendor + account, JSON.stringify(offerInfo));
     }
-    //removeRetrieveAmexOffersButton();
+    alert('All offers have been retrieved.');
 }
 
 // Clean expired offers in localstorage
@@ -151,16 +141,10 @@ function cleanLocalStorageOffers() {
     for (let i = 0; i < localStorage.length; i++) {
         if (typeof (localStorage.getItem(localStorage.key(i))) == String) {
             var offerInfo = JSON.parse(localStorage.getItem(localStorage.key(i)));
-                const expirationDate = new Date(offerInfo.expiration);
-                if (expirationDate < today) {
-                    localStorage.removeItem(localStorage.key(i))
-                }
+            const expirationDate = new Date(offerInfo.expiration);
+            if (expirationDate < today) {
+                localStorage.removeItem(localStorage.key(i));
             }
         }
-}
-
-// Remove the button after retrieving all offers
-function removeRetrieveAmexOffersButton() {
-    var retrieveButton = document.getElementById('retrieveAmexOffers');
-    retrieveButton.parentNode.removeChild(retrieveButton);
+    }
 }
