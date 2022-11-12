@@ -5,7 +5,6 @@ const curUrl = window.location.toString();
 const amexEligible = "https://global.americanexpress.com/offers/eligible";
 const amexEnrolled = "https://global.americanexpress.com/offers/enrolled";
 
-
 // Check the current tab
 switch (curUrl) {
     case amexEligible:
@@ -79,6 +78,7 @@ function removeClickAmexOffersButton() {
 
 // Add a button to the page which retrieves all offers
 function getAmexOffers() {
+    cleanLocalStorageOffers();
     setTimeout(function () {
         const header = document.querySelector('.axp-offers__global__headerSection___1aNfL');
         var retrieveButton = addRetrieveAmexOffersButton();
@@ -100,7 +100,6 @@ function addRetrieveAmexOffersButton() {
 
 // Retrieve all offers info
 function retrieveAmexOffers() {
-    cleanLocalAmexOffers();
     const accountNumber = document.getElementsByClassName('card-name heading-1 axp-account-switcher__accountSwitcher__lastFive___1s6L_ axp-account-switcher__accountSwitcher__hasOneCardLastFive___3mnDN');
     const vendorNames = document.getElementsByClassName('body-1 margin-0-b dls-gray-05');
     const offers = document.getElementsByClassName('heading-3 margin-0-b dls-gray-06');
@@ -134,19 +133,30 @@ function retrieveAmexOffers() {
             }
             expirationISO = expirationDate.toISOString();
             var splits = expirationISO.split('-');
-            expiration = splits[1] + '/' + splits[2].slice(0, 2) + '/' + splits[0];
+            expiration = splits[1] + '-' + splits[2].slice(0, 2) + '-' + splits[0];
 
         // offers that are not expiring in two weeks
         } else {
             expiration = rawExpirations[i - rawCloseExpirations.length].innerHTML;
-            var splits = expiration.split('/')
-            var expirationISODate = new Date(splits[2] + '-' + splits[0] + '-' + splits[1] + 'T00:00:00');
-            expirationISO = expirationISODate.toISOString();
         }
-        var val = { 'offer': offer, 'expiration': expiration, 'account': account, 'expirationISO': expirationISO };
-        console.log(val);
+        var offerInfo = {'offer': offer, 'expiration': expiration, 'account': account, 'bank': 'AmexOffers'};
+        localStorage.setItem(vendor, JSON.stringify(offerInfo));
     }
     //removeRetrieveAmexOffersButton();
+}
+
+// Clean expired offers in localstorage
+function cleanLocalStorageOffers() {
+    const today = new Date();
+    for (let i = 0; i < localStorage.length; i++) {
+        if (typeof (localStorage.getItem(localStorage.key(i))) == String) {
+            var offerInfo = JSON.parse(localStorage.getItem(localStorage.key(i)));
+                const expirationDate = new Date(offerInfo.expiration);
+                if (expirationDate < today) {
+                    localStorage.removeItem(localStorage.key(i))
+                }
+            }
+        }
 }
 
 // Remove the button after retrieving all offers
